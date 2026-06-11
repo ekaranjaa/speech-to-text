@@ -1,0 +1,6 @@
+# Runtime data: mongo db, uploads, logs, libretranslate, downloaded whisper
+# models. Can be large (multi-GB) and is machine-local — never commit it.
+whishper_data/
+
+# macOS
+.DS_Store
