@@ -26,10 +26,16 @@ GPU passthrough. All three images publish native arm64 builds.
 
 ```bash
 cd ~/Code/speech-to-text
+cp .env.example .env      # create your local config (edit if you like)
 docker compose up -d      # pulls images, starts the stack
 ```
 
 Then open **http://localhost:8083**.
+
+> **First transcription right after boot may fail** with a "connection refused"
+> error: on first start the transcription service loads the whisper models
+> before it accepts requests. Give it a minute (watch `docker compose logs -f
+> whishper` for `Uvicorn running on http://0.0.0.0:8000`), then retry.
 
 **First run downloads models and language data**, so the first transcription is
 slow and the `translate` service takes a while to become healthy. Preloaded

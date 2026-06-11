@@ -2,5 +2,8 @@
 # models. Can be large (multi-GB) and is machine-local — never commit it.
 whishper_data/
 
+# Local config (copy from .env.example). Keeps your own creds/ports out of git.
+.env
+
 # macOS
 .DS_Store
