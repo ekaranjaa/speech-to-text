@@ -9,6 +9,12 @@ engine is [**faster-whisper**](https://github.com/SYSTRAN/faster-whisper). This
 is the speech-to-text sibling of the `text-to-speech` (Kokoro + OpenReader)
 setup, and it runs entirely locally.
 
+> **Need GPU acceleration?** This `main` branch is CPU-only (Whishper, tuned for
+> Apple Silicon). A separate **`gpu`** branch runs a cross-vendor
+> **whisper.cpp + Vulkan** stack for AMD / Intel / NVIDIA GPUs on Linux:
+> `git switch gpu`. It's a different stack with a lighter UI — see that branch's
+> README.
+
 ## Stack
 
 Three containers (see `docker-compose.yml`):
@@ -82,4 +88,6 @@ the whole folder for a clean slate.
   [`speaches`](https://github.com/speaches-ai/speaches) — a different packaging
   of the same faster-whisper core that exposes an OpenAI-compatible
   `/v1/audio/transcriptions` endpoint — as an extra service. Out of scope here.
-- **GPU:** not available under Docker on macOS; this stack is CPU-only by design.
+- **GPU:** not available under Docker on macOS, so this `main` stack is CPU-only
+  by design. For GPU acceleration on a Linux host, use the **`gpu`** branch
+  (`git switch gpu`) — a whisper.cpp + Vulkan stack.
