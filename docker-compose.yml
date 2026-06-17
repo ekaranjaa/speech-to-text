@@ -1,88 +1,33 @@
-# Speech-to-Text — Whishper (faster-whisper) self-hosted transcription suite.
-# CPU profile, tuned for Apple Silicon (M1 Pro / arm64). Mirrors the sibling
-# text-to-speech compose: inline comments, restart: unless-stopped, persistent
-# data under ./whishper_data. Visit the UI at http://localhost:8083.
-#
-# Adapted from the official upstream CPU compose:
-#   https://github.com/pluja/whishper  (docker-compose.yml + example.env)
+# Speech-to-Text — GPU branch: whisper.cpp + Vulkan (cross-vendor).
+# Single service. Replaces the CPU-only Whishper stack on `main`.
+# Requires a Linux host with Mesa Vulkan drivers and /dev/dri.
+# Visit the UI at http://localhost:8083.
 
 services:
-  # MongoDB — stores transcription jobs and metadata. Internal only (not
-  # published to the host). mongo:7 ships an arm64 image, so it runs natively
-  # on Apple Silicon (the AVX requirement that breaks Mongo is x86-only).
-  mongo:
-    image: mongo:7
-    container_name: whishper-mongo
-    env_file:
-      - .env
+  # whisper.cpp HTTP server with the Vulkan backend. Serves a built-in web page
+  # (upload -> transcribe -> download SRT/VTT/JSON/TXT) and an /inference API.
+  whisper:
+    image: ${WHISPER_IMAGE:-ghcr.io/ggml-org/whisper.cpp:main-vulkan}
+    container_name: whisper-gpu
     restart: unless-stopped
-    volumes:
-      - ./whishper_data/db_data:/data/db
-      - ./whishper_data/db_data/logs/:/var/log/mongodb/
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${DB_USER:-whishper}
-      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS:-whishper}
-    expose:
-      - 27017
-    command: ['--logpath', '/var/log/mongodb/mongod.log']
-
-  # LibreTranslate — neural translation for subtitles (60+ languages). The set
-  # of languages it loads is limited via LT_LOAD_ONLY in .env to keep first
-  # boot fast. Internal only.
-  translate:
-    image: libretranslate/libretranslate:latest
-    container_name: whishper-libretranslate
-    restart: unless-stopped
-    env_file:
-      - .env
-    tty: true
-    environment:
-      LT_DISABLE_WEB_UI: "True"
-      LT_UPDATE_MODELS: "True"
-    volumes:
-      - ./whishper_data/libretranslate/data:/home/libretranslate/.local/share
-      - ./whishper_data/libretranslate/cache:/home/libretranslate/.local/cache
-    expose:
-      - 5000
-    networks:
-      default:
-        aliases:
-          - translate
-    healthcheck:
-      test: ['CMD-SHELL', './venv/bin/python scripts/healthcheck.py']
-      interval: 2s
-      timeout: 3s
-      retries: 5
-
-  # Whishper — all-in-one app: web UI + Go backend + faster-whisper + nginx.
-  # The only service published to the host. CPU transcription profile.
-  whishper:
-    image: pluja/whishper:${WHISHPER_VERSION:-latest}
-    container_name: whishper
-    pull_policy: always
-    env_file:
-      - .env
-    restart: unless-stopped
-    depends_on:
-      - mongo
-      - translate
     ports:
-      - 8083:80
+      - ${WHISPER_PORT:-8083}:8080
+    # GPU access for Vulkan: pass through the DRI render node and join the
+    # host's render group so the container can use /dev/dri.
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - ${RENDER_GID:-993}
     volumes:
-      - ./whishper_data/uploads:/app/uploads
-      - ./whishper_data/logs:/var/log/whishper
-      # Persist downloaded whisper models so they are not re-downloaded on every
-      # container recreate (upstream omits this mount).
-      - ./whishper_data/models:/app/models
-    networks:
-      default:
-        aliases:
-          - whishper
-    environment:
-      PUBLIC_INTERNAL_API_HOST: "http://127.0.0.1:80"
-      PUBLIC_TRANSLATION_API_HOST: ""
-      PUBLIC_API_HOST: ${WHISHPER_HOST:-}
-      PUBLIC_WHISHPER_PROFILE: cpu
-      WHISPER_MODELS_DIR: /app/models
-      UPLOAD_DIR: /app/uploads
-      CPU_THREADS: ${CPU_THREADS:-8}
+      # Persist downloaded ggml models so they are not re-fetched on recreate.
+      - ./whisper_data/models:/models
+      # Optional: a place for input/output files if you script the API.
+      - ./whisper_data/uploads:/uploads
+    # Option A (official image): explicitly launch the server against the model.
+    # For Option B (kth8 server image) remove this command block.
+    command: >
+      whisper-server
+      --host 0.0.0.0
+      --port 8080
+      -m /models/${WHISPER_MODEL:-ggml-medium.bin}
+      -t ${WHISPER_THREADS:-4}
