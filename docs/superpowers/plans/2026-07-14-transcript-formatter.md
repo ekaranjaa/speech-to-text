@@ -825,7 +825,7 @@ git commit -m "feat(formatter): formatting engine orchestrating chunk -> Ollama 
   - `create_app(config: Config | None = None) -> FastAPI` — seeds profiles on startup, stores `config`/`store`/`client` on `app.state`.
   - Dependency providers `get_config`, `get_store`, `get_client` (overridable in tests).
   - `_model_available(model: str, available: list[str]) -> bool`.
-  - `app = create_app()` module-level instance (used by uvicorn as `app.main:app`).
+  - No module-level app instance — uvicorn runs it via the factory (`--factory app.main:create_app`) so importing `app.main` has no filesystem side effects.
   - JSON routes: `GET /api/health`, `GET/POST /api/profiles`, `GET/PUT/DELETE /api/profiles/{id}`, `POST /api/format` (streaming `text/plain`).
 
 - [ ] **Step 1: Write the failing test** — `formatter/tests/test_api.py`
@@ -1085,11 +1085,12 @@ def create_app(config: Optional[Config] = None) -> FastAPI:
         return templates.TemplateResponse("profiles.html", {"request": request})
 
     return app
-
-
-app = create_app()
 ```
 
+> Note: there is intentionally **no** module-level `app = create_app()` — uvicorn
+> instantiates it via `--factory` (see Task 8), so importing `app.main` never
+> touches the filesystem (which would fail on a host without a writable `/app`).
+>
 > Note: `GET /` and `GET /manage` reference templates created in Task 7. They are wired here but exercised by Task 7's tests.
 
 - [ ] **Step 4: Run test to verify it passes**
@@ -1445,7 +1446,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 - [ ] **Step 2: Create `formatter/.dockerignore`**
