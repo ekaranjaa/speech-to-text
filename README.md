@@ -28,6 +28,38 @@ Three containers (see `docker-compose.yml`):
 Tuned for **Apple Silicon (M1 Pro / arm64), CPU-only** — Docker on macOS has no
 GPU passthrough. All three images publish native arm64 builds.
 
+## Transcript Formatter (optional post-processing)
+
+A fourth, optional service — **`formatter`** (**http://localhost:8084**) — reflows
+a raw transcript into a saved **style profile** (e.g. GoTranscript-style clean or
+full verbatim) using a **local LLM**. Export a transcript from Whishper, paste or
+upload it, pick a profile, then copy or download the formatted result. Two
+profiles are seeded on first run — **Full Verbatim** and **Clean Verbatim** — and
+you can add or edit your own in the **Profiles** tab (they persist under
+`./formatter_data/profiles/`, git-ignored).
+
+The LLM runs in **[Ollama](https://ollama.com) on the host** — not in Docker, so
+it uses the Metal GPU (Docker on macOS is CPU-only). Install and start it, then
+pull the default model:
+
+```bash
+brew install ollama         # if not already installed
+ollama serve &              # or launch the Ollama app
+ollama pull qwen2.5:7b-instruct
+```
+
+Then bring the stack up (the `formatter` image builds locally) and open the UI:
+
+```bash
+docker compose up -d --build
+open http://localhost:8084
+```
+
+> Like Whishper's first run, a format call fails **clearly** if Ollama isn't
+> running or the model isn't pulled — the UI tells you which and how to fix it.
+> On a 16 GB M1 Pro, keep the default 7B model; bump `FORMATTER_MODEL` to
+> `qwen2.5:14b` in `.env` when you're not transcribing at the same time.
+
 ## Quick start
 
 ```bash
