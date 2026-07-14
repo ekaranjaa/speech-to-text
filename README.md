@@ -38,6 +38,11 @@ profiles are seeded on first run — **Full Verbatim** and **Clean Verbatim** �
 you can add or edit your own in the **Profiles** tab (they persist under
 `./formatter_data/profiles/`, git-ignored).
 
+**Speaker-labeled output** — assigning speakers and exporting SRT/VTT/TXT/Markdown
+with `Speaker:` labels — additionally needs the host-native **diarizer** service
+running (see `diarizer/README.md`). The formatter container reaches it at
+`DIARIZER_HOST` (default `http://host.docker.internal:8090`).
+
 The LLM runs in **[Ollama](https://ollama.com) on the host** — not in Docker, so
 it uses the Metal GPU (Docker on macOS is CPU-only). Install and start it, then
 pull the default model:

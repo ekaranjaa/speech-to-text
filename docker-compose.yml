@@ -109,3 +109,5 @@ services:
       FORMATTER_MODEL: ${FORMATTER_MODEL:-qwen2.5:7b-instruct}
       FORMATTER_TEMPERATURE: ${FORMATTER_TEMPERATURE:-0.2}
       FORMATTER_MAX_CHUNK_WORDS: ${FORMATTER_MAX_CHUNK_WORDS:-800}
+      # Host-native diarizer (cd diarizer && ./run.sh) for speaker-labeled output.
+      DIARIZER_HOST: ${DIARIZER_HOST:-http://host.docker.internal:8090}
