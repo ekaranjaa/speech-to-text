@@ -71,6 +71,26 @@ To change the UI port, edit **both** the `ports:` mapping in
 `docker-compose.yml` (`8083:80`) and `WHISHPER_HOST` in `.env`, then
 `docker compose up -d`.
 
+## Switching branches (`main` ↔ `gpu`)
+
+`.env` is **git-ignored**, so it does **not** change when you `git switch`
+between this branch and `gpu` — the previous branch's `.env` stays in your
+working tree and misconfigures the other stack. Each branch ships its **own**
+`.env.example`, so after switching, regenerate `.env` for the branch you land on:
+
+```bash
+git switch main
+cp .env.example .env      # Whishper (CPU) config — this branch
+docker compose up -d
+```
+
+Leaving the `gpu` branch's `.env` in place on `main` is the classic trap: it has
+no `DB_USER` / `DB_PASS`, so the Whishper backend can't authenticate to Mongo and
+**uploads fail with "Internal server error"** — the file is saved to
+`whishper_data/uploads/` but the transcription record can't be written, and the
+library shows nothing. If uploads break right after a branch switch, this is
+almost always why. (The `gpu` branch carries the mirror-image note.)
+
 ## Data
 
 Everything persists under `./whishper_data/` (git-ignored): `db_data/` (mongo),
