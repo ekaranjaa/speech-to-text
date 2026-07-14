@@ -7,7 +7,7 @@ def test_defaults():
     assert cfg.hf_token is None
     assert cfg.whisper_model == "medium"
     assert cfg.device == "auto"
-    assert cfg.model_cache == "./whishper_data/models"
+    assert cfg.model_cache == "../whishper_data/models"
 
 
 def test_overrides():

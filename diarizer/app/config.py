@@ -21,5 +21,5 @@ def load_config(env: Optional[Mapping[str, str]] = None) -> DiarizerConfig:
         hf_token=env.get("HF_TOKEN") or None,
         whisper_model=env.get("DIARIZER_WHISPER_MODEL", "medium"),
         device=env.get("DIARIZER_DEVICE", "auto"),
-        model_cache=env.get("DIARIZER_MODEL_CACHE", "./whishper_data/models"),
+        model_cache=env.get("DIARIZER_MODEL_CACHE", "../whishper_data/models"),
     )
