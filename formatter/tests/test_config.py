@@ -34,3 +34,12 @@ def test_config_is_frozen():
     except Exception:
         return
     raise AssertionError("Config should be immutable")
+
+
+def test_diarizer_host_default():
+    assert load_config({}).diarizer_host == "http://host.docker.internal:8090"
+
+
+def test_diarizer_host_override():
+    cfg = load_config({"DIARIZER_HOST": "http://localhost:8090"})
+    assert cfg.diarizer_host == "http://localhost:8090"

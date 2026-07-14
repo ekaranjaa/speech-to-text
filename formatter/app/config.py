@@ -12,6 +12,7 @@ class Config:
     temperature: float
     max_chunk_words: int
     profiles_dir: str
+    diarizer_host: str
 
 
 def load_config(env: Optional[Mapping[str, str]] = None) -> Config:
@@ -22,4 +23,5 @@ def load_config(env: Optional[Mapping[str, str]] = None) -> Config:
         temperature=float(e.get("FORMATTER_TEMPERATURE", "0.2")),
         max_chunk_words=int(e.get("FORMATTER_MAX_CHUNK_WORDS", "800")),
         profiles_dir=e.get("FORMATTER_PROFILES_DIR", "/app/profiles"),
+        diarizer_host=e.get("DIARIZER_HOST", "http://host.docker.internal:8090"),
     )
