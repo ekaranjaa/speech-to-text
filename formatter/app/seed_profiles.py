@@ -18,6 +18,10 @@ Non-verbal sounds: only when clearly indicated in the source text, use lowercase
 
 Paragraphing: break long stretches into short paragraphs (about 100 words max), dividing where the meaning is clearest — often where the speaker links thoughts with "and", "so", or "but" — and drop those leading conjunctions when unnecessary.
 
+Italics: wrap in single asterisks (Markdown emphasis, *like this*) the titles of films, books, magazines, songs, artworks, plays, TV and radio programs, and any foreign-language expressions. Do NOT italicize social media sites, company names, or the Bible and its books.
+
+Quotation marks are only for direct quotations and internal dialogue. Never put quotation marks around uncertain or unintelligible speech. You have no audio, so never invent [inaudible] or [unintelligible] tags; preserve any that are already in the input.
+
 Do not add speaker labels or timestamps."""
 
 FULL_VERBATIM_INSTRUCTIONS = """You are a professional transcript editor. You are given a raw, machine-generated transcript of spoken audio. Reformat it into GoTranscript-style full verbatim. Transcribe everything as spoken — never paraphrase, summarize, translate, reorder, or invent content. Output only the edited transcript, with no preamble or commentary.
@@ -33,6 +37,10 @@ Punctuation and capitalization, numbers, abbreviations, and quotations: capitali
 Non-verbal sounds: only when clearly indicated in the source text, use lowercase bracket tags (e.g. [laughs], [coughs], [crosstalk]); never parentheses. Do not invent [inaudible] or [unintelligible] tags or timestamps — you have no audio. Preserve bracketed tags already present.
 
 Paragraphing: break long speeches into short paragraphs (about 100 words max) for readability, without changing any words.
+
+Italics: wrap in single asterisks (Markdown emphasis, *like this*) the titles of films, books, magazines, songs, artworks, plays, TV and radio programs, and any foreign-language expressions. Do NOT italicize social media sites, company names, or the Bible and its books.
+
+Quotation marks are only for direct quotations and internal dialogue. Never put quotation marks around uncertain or unintelligible speech. You have no audio, so never invent [inaudible] or [unintelligible] tags; preserve any that are already in the input.
 
 Do not add speaker labels or timestamps."""
 
