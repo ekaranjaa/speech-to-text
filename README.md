@@ -71,6 +71,26 @@ docker compose logs whisper | grep -i vulkan   # should name your GPU
 Models come from <https://huggingface.co/ggerganov/whisper.cpp>
 (`ggml-small.bin`, `ggml-medium.bin`, `ggml-large-v3-turbo.bin`, …).
 
+## Switching branches (`gpu` ↔ `main`)
+
+`.env` is **git-ignored**, so it does **not** change when you `git switch`
+between this branch and `main` — the previous branch's `.env` stays in your
+working tree and misconfigures the other stack. Each branch ships its **own**
+`.env.example`, so after switching, regenerate `.env` for the branch you land on:
+
+```bash
+git switch gpu
+cp .env.example .env      # whisper.cpp + Vulkan config — this branch
+getent group render       # set RENDER_GID in .env to this host's value
+docker compose up -d
+```
+
+Leaving the `main` branch's `.env` in place here is the classic trap: it has no
+`WHISPER_IMAGE` / `RENDER_GID`, so the container comes up with the wrong image or
+no `/dev/dri` access — a silent CPU fallback or a startup error rather than the
+Vulkan GPU path. Regenerating from this branch's `.env.example` fixes it. (The
+`main` branch carries the mirror-image note.)
+
 ## ROCm (optional, AMD only)
 
 Vulkan is the cross-vendor default and works on most AMD cards. On
