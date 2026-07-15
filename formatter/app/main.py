@@ -244,14 +244,15 @@ def create_app(config: Optional[Config] = None) -> FastAPI:
             headers={"Content-Disposition": f'attachment; filename="transcript.{req.format}"'},
         )
 
-    @app.get("/")
-    def format_page(request: Request, store: ProfileStore = Depends(get_store)):
-        return templates.TemplateResponse(
-            "format.html", {"request": request, "profiles": store.list()}
-        )
-
     @app.get("/manage")
     def manage_page(request: Request):
         return templates.TemplateResponse("profiles.html", {"request": request})
+
+    # Serve the built Vue SPA at "/" when present (produced by `npm run build`
+    # locally or the multi-stage Docker build). Registered last so every
+    # /api/* route and /manage take precedence.
+    web_dist = _APP_DIR.parent / "web" / "dist"
+    if web_dist.exists():
+        app.mount("/", StaticFiles(directory=str(web_dist), html=True), name="spa")
 
     return app
