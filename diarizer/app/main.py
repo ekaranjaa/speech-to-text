@@ -7,7 +7,7 @@ from typing import Optional
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 
 from app.config import DiarizerConfig, load_config
-from app.engines import Diarizer, Transcriber, build_real_engines
+from app.engines import Diarizer, DiarizerConfigError, Transcriber, build_real_engines
 from app.pipeline import run_diarization
 
 
@@ -44,11 +44,19 @@ def create_app(
         data = await audio.read()
         if not data:
             raise HTTPException(400, "Audio file is empty.")
-        transcriber, diar = _engines()
+        try:
+            transcriber, diar = _engines()
+        except DiarizerConfigError as exc:
+            raise HTTPException(503, str(exc))
+        except Exception as exc:  # model download / load failure
+            raise HTTPException(500, f"Diarization engine failed to load: {exc}")
         suffix = Path(audio.filename or "audio").suffix or ".wav"
-        with tempfile.NamedTemporaryFile(suffix=suffix) as tmp:
-            tmp.write(data)
-            tmp.flush()
-            return run_diarization(tmp.name, transcriber, diar, num_speakers)
+        try:
+            with tempfile.NamedTemporaryFile(suffix=suffix) as tmp:
+                tmp.write(data)
+                tmp.flush()
+                return run_diarization(tmp.name, transcriber, diar, num_speakers)
+        except Exception as exc:  # transcription / diarization failure
+            raise HTTPException(500, f"Diarization failed: {exc}")
 
     return app

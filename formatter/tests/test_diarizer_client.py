@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from app.diarizer_client import DiarizerClient, DiarizerUnreachable
+from app.diarizer_client import DiarizerClient, DiarizerError, DiarizerUnreachable
 
 
 def _client(handler):
@@ -45,3 +45,12 @@ def test_diarize_unreachable_raises():
 
     with pytest.raises(DiarizerUnreachable):
         _client(handler).diarize(b"x", "clip.wav")
+
+
+def test_diarize_surfaces_error_detail():
+    def handler(request):
+        return httpx.Response(500, json={"detail": "Diarization failed: boom"})
+
+    with pytest.raises(DiarizerError) as ei:
+        _client(handler).diarize(b"x", "clip.wav")
+    assert "boom" in str(ei.value)

@@ -49,3 +49,25 @@ def test_diarize_happy_path():
 def test_diarize_empty_audio_400():
     r = _client().post("/diarize", files={"audio": ("a.wav", b"", "audio/wav")})
     assert r.status_code == 400
+
+
+def test_diarize_missing_token_returns_503():
+    # No injected engines -> builds real engines -> token guard fires before torch.
+    app = create_app(_cfg(token=None))
+    r = TestClient(app).post("/diarize", files={"audio": ("a.wav", b"data", "audio/wav")})
+    assert r.status_code == 503
+    assert "HF_TOKEN" in r.json()["detail"]
+
+
+class _BoomDiarizer:
+    def diarize(self, audio_path, num_speakers):
+        raise RuntimeError("pipeline exploded")
+
+
+def test_diarize_inference_error_returns_detail():
+    app = create_app(_cfg(), FakeTranscriber(), _BoomDiarizer())
+    r = TestClient(app).post("/diarize", files={"audio": ("a.wav", b"data", "audio/wav")})
+    assert r.status_code == 500
+    body = r.json()["detail"]
+    assert "Diarization failed" in body
+    assert "pipeline exploded" in body

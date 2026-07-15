@@ -55,6 +55,16 @@ def test_diarize_route_empty_400(tmp_path):
     assert r.status_code == 400
 
 
+def test_diarize_route_surfaces_diarizer_error(tmp_path):
+    def diar(request):
+        return httpx.Response(500, json={"detail": "Diarization failed: boom"})
+
+    client = TestClient(_app(tmp_path, diar))
+    r = client.post("/api/diarize", files={"audio": ("a.wav", b"data", "audio/wav")})
+    assert r.status_code == 502
+    assert "boom" in r.json()["detail"]
+
+
 def test_format_segments_streams_ndjson(tmp_path):
     client = TestClient(_app(tmp_path, lambda req: httpx.Response(200, json={})))
     body = {

@@ -31,9 +31,14 @@ class DiarizerClient:
         data = {"num_speakers": str(num_speakers)} if num_speakers else {}
         try:
             resp = self._client.post(f"{self._host}/diarize", files=files, data=data)
-            resp.raise_for_status()
-            return resp.json()
         except httpx.ConnectError as exc:
             raise DiarizerUnreachable(str(exc)) from exc
         except httpx.HTTPError as exc:
             raise DiarizerError(str(exc)) from exc
+        if resp.status_code >= 400:
+            try:
+                detail = resp.json().get("detail")
+            except Exception:
+                detail = None
+            raise DiarizerError(detail or f"diarizer returned HTTP {resp.status_code}")
+        return resp.json()

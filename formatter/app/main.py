@@ -11,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 from app.config import Config, load_config
-from app.diarizer_client import DiarizerClient, DiarizerUnreachable
+from app.diarizer_client import DiarizerClient, DiarizerError, DiarizerUnreachable
 from app.exports import to_markdown, to_srt, to_txt, to_vtt
 from app.formatting import format_segments, format_transcript
 from app.ollama_client import OllamaClient
@@ -184,6 +184,8 @@ def create_app(config: Optional[Config] = None) -> FastAPI:
                 f"Diarizer isn't reachable at {config.diarizer_host}. "
                 "Start it on the host (cd diarizer && ./run.sh).",
             )
+        except DiarizerError as exc:
+            raise HTTPException(502, str(exc))
 
     _EXPORTERS = {"srt": to_srt, "vtt": to_vtt, "txt": to_txt, "md": to_markdown}
     _EXPORT_MEDIA = {
