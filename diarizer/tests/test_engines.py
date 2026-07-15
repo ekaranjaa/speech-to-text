@@ -1,7 +1,12 @@
 import pytest
 
 from app.config import DiarizerConfig
-from app.engines import DiarizerConfigError, build_real_engines, resolve_device
+from app.engines import (
+    DiarizerConfigError,
+    _apply_numpy2_compat,
+    build_real_engines,
+    resolve_device,
+)
 
 
 class _FakeMPS:
@@ -33,6 +38,17 @@ def test_resolve_device_auto_falls_back_to_cpu():
 def test_resolve_device_explicit_passthrough():
     assert resolve_device("cpu", _FakeTorch(True)) == "cpu"
     assert resolve_device("cuda", _FakeTorch(False)) == "cuda"
+
+
+def test_numpy2_compat_restores_removed_aliases():
+    # pyannote.audio 3.3.1 uses np.NAN / np.Inf, which numpy 2.0 removed. The shim
+    # must restore them so diarization doesn't crash mid-pipeline (AttributeError).
+    _apply_numpy2_compat()
+    import numpy as np
+
+    assert np.isnan(np.NAN)
+    assert np.isinf(np.Inf)
+    assert np.isinf(np.NINF) and np.NINF < 0
 
 
 def test_build_real_engines_requires_token():

@@ -2,6 +2,17 @@ fastapi==0.115.6
 uvicorn[standard]==0.32.1
 faster-whisper==1.1.1
 pyannote.audio==3.3.1
+# pyannote 3.3.1 forwards use_auth_token= down to hf_hub_download(), which
+# huggingface_hub 1.x removed. Pin to a version that still accepts it (and that
+# satisfies tokenizers' >=0.16.4,<2.0 bound) or engine load fails with a 500.
+huggingface_hub==0.25.2
+# pyannote 3.3.1 imports matplotlib.pyplot in segmentation/mixins.py but does NOT
+# declare it as a dependency, so a clean install crashes at pipeline load. Pin it.
+matplotlib==3.11.0
+# numpy 2.0 removed np.NAN/np.Inf aliases that pyannote 3.3.1 still uses. We can't
+# go back to 1.x (scipy & pyannote.core require >=2.0), so app.engines restores the
+# aliases at runtime; this pin just locks the tested 2.x for reproducibility.
+numpy==2.5.1
 torch==2.5.1
 # torchaudio MUST match torch exactly — a newer torchaudio references torch ABI
 # symbols (e.g. _aoti_torch_abi_version) absent in 2.5.1, causing a dlopen crash.

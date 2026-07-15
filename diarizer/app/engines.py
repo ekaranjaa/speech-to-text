@@ -19,6 +19,23 @@ class DiarizerConfigError(RuntimeError):
     pass
 
 
+def _apply_numpy2_compat() -> None:
+    """Restore numpy constant aliases that numpy 2.0 removed (np.NAN, np.Inf, ...).
+
+    pyannote.audio 3.3.1 still references np.NAN (e.g. speaker_diarization.reconstruct),
+    but scipy and pyannote.core both require numpy>=2.0, so downgrading numpy isn't an
+    option. Re-adding the aliases is a no-op on numpy 1.x and unblocks 3.3.1 on 2.x."""
+    import numpy as np
+
+    aliases = {
+        "NAN": np.nan, "NaN": np.nan, "Inf": np.inf, "Infinity": np.inf,
+        "infty": np.inf, "PINF": np.inf, "NINF": -np.inf, "PZERO": 0.0, "NZERO": -0.0,
+    }
+    for name, value in aliases.items():
+        if not hasattr(np, name):
+            setattr(np, name, value)
+
+
 def resolve_device(requested: str, torch_module) -> str:
     """'auto' -> 'mps' if available else 'cpu'. Explicit values pass through."""
     if requested != "auto":
@@ -40,6 +57,7 @@ def build_real_engines(config) -> Tuple[Transcriber, Diarizer]:
         )
     import torch  # deferred: heavy, only needed for real inference
 
+    _apply_numpy2_compat()  # pyannote 3.3.1 needs numpy<2 aliases; restore them
     device = resolve_device(config.device, torch)
     return (
         FasterWhisperTranscriber(config.whisper_model, config.model_cache),
