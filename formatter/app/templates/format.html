@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="grid">
+  <div>
+    <label for="profile">Style profile</label>
+    <select id="profile">
+      {% for p in profiles %}
+      <option value="{{ p.id }}">{{ p.name }}</option>
+      {% endfor %}
+    </select>
+    <label for="input">Transcript</label>
+    <textarea id="input" rows="18" placeholder="Paste a transcript, or upload a .txt file below."></textarea>
+    <input type="file" id="file" accept=".txt,text/plain">
+    <button id="run">Format</button>
+    <p id="status" class="status"></p>
+  </div>
+  <div>
+    <label for="output">Formatted output</label>
+    <textarea id="output" rows="18" readonly></textarea>
+    <button id="copy">Copy</button>
+    <button id="download">Download .txt</button>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/format.js"></script>{% endblock %}
