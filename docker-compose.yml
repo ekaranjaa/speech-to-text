@@ -86,3 +86,28 @@ services:
       WHISPER_MODELS_DIR: /app/models
       UPLOAD_DIR: /app/uploads
       CPU_THREADS: ${CPU_THREADS:-8}
+
+  # Transcript Formatter — local LLM post-processing. Reflows a Whishper
+  # transcript into a saved style profile (GoTranscript-style clean/full
+  # verbatim, etc.) via Ollama running NATIVELY on the host (Metal GPU).
+  # Ollama is deliberately NOT containerized: Docker on macOS has no GPU
+  # passthrough, so an in-container model would be CPU-only and slow.
+  formatter:
+    build: ./formatter
+    container_name: whishper-formatter
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - ${FORMATTER_PORT:-8084}:8000
+    volumes:
+      - ./formatter_data/profiles:/app/profiles
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      FORMATTER_MODEL: ${FORMATTER_MODEL:-qwen2.5:7b-instruct}
+      FORMATTER_TEMPERATURE: ${FORMATTER_TEMPERATURE:-0.2}
+      FORMATTER_MAX_CHUNK_WORDS: ${FORMATTER_MAX_CHUNK_WORDS:-800}
+      # Host-native diarizer (cd diarizer && ./run.sh) for speaker-labeled output.
+      DIARIZER_HOST: ${DIARIZER_HOST:-http://host.docker.internal:8090}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="grid">
+  <div>
+    <h2>Profiles</h2>
+    <ul id="list"></ul>
+    <button id="new">New profile</button>
+  </div>
+  <div>
+    <h2 id="editor-title">Editor</h2>
+    <input type="hidden" id="edit-id">
+    <label for="name">Name</label>
+    <input type="text" id="name">
+    <label for="description">Description</label>
+    <input type="text" id="description">
+    <label for="instructions">Instructions (system prompt)</label>
+    <textarea id="instructions" rows="14"></textarea>
+    <label for="model">Model override (optional)</label>
+    <input type="text" id="model" placeholder="e.g. qwen2.5:14b">
+    <label for="temperature">Temperature override (optional)</label>
+    <input type="number" id="temperature" step="0.1" min="0" max="2">
+    <div class="row">
+      <button id="save">Save</button>
+      <button id="delete">Delete</button>
+    </div>
+    <p id="status" class="status"></p>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/profiles.js"></script>{% endblock %}

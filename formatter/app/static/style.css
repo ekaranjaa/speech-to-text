@@ -1,0 +1,16 @@
+:root { font-family: system-ui, sans-serif; }
+body { margin: 0; color: #1a1a1a; }
+header { display: flex; align-items: baseline; gap: 1.5rem; padding: 1rem 1.5rem; border-bottom: 1px solid #ddd; }
+header h1 { font-size: 1.15rem; margin: 0; }
+nav a { margin-right: 1rem; text-decoration: none; color: #2563eb; }
+main { padding: 1.5rem; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+label { display: block; margin: 0.75rem 0 0.25rem; font-weight: 600; font-size: 0.9rem; }
+textarea, input, select { width: 100%; box-sizing: border-box; padding: 0.5rem; font: inherit; }
+textarea { resize: vertical; font-family: ui-monospace, monospace; }
+button { margin-top: 0.75rem; margin-right: 0.5rem; padding: 0.5rem 1rem; cursor: pointer; }
+.status { min-height: 1.2rem; color: #b45309; }
+.row { display: flex; }
+ul#list { list-style: none; padding: 0; }
+ul#list li { padding: 0.4rem 0; cursor: pointer; color: #2563eb; }
+@media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
